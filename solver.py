@@ -10,62 +10,82 @@ import sys
 
 def solver(row, col):
     nonogram = np.zeros((len(row), len(col)))
-    print()
+
     for i in range(len(row)):
-        maxFillable = sum(row[i]) + len(row[i]) - 1
-        if maxFillable == nonogram[i].size :
-            nonogram=fillRow(i, row[i], nonogram)
-        elif maxFillable == 0 :
-            nonogram=fillEmptyRow(i, nonogram)
+        white_spaces = len(row[i]) - 1
+        fillable_spaces = sum(row[i])
+        col_val = row[i]
+        max_fillable = fillable_spaces + white_spaces
+        offset = nonogram[i].size - max_fillable
+
+        if max_fillable == nonogram[i].size:
+            nonogram = fillRow(i, col_val, nonogram)
+        elif max_fillable == 0:
+            nonogram = fillEmptyRow(i, nonogram)
         else:
-            nonogram=fillRowWithOffset(i, row[i], nonogram[i].size-maxFillable, nonogram)
+            nonogram = fillRowWithOffset(
+                i, col_val, offset, nonogram)
 
     return nonogram
 
 
-def fillRowWithOffset(index, values, offset, board) :
-    toPlace = 0
-    for i in values:
-        aux = offset
+def fillRowWithOffset(row, col_val, offset, board):
+    col = 0
+    for i in col_val:
+        cur_offset = offset
+
         for j in range(i):
-            if aux > 0:
-                aux -=1
-            else:
-                board[index][toPlace] = 1
-            toPlace += 1
-        # gap between two chains
-        toPlace += 1
+            if cur_offset > 0:
+                cur_offset -= 1
+                col += 1
+                continue
+
+            board[row][col] = 1
+            col += 1
+
+        col += 1
     return board
 
-def fillEmptyRow(index, board):
-    for i in range(board[index].size) :
-        board[index][i] = -1
+
+def fillEmptyRow(row, board):
+    row_size = board[row].size
+
+    for i in range(row_size):
+        board[row][i] = -1
+
     return board
 
-def fillRow(index, values, board):
-    toPlace=0
-    for i in values:
+
+def fillRow(row, col_values, board):
+    col = 0
+    row_size = board[row].size
+
+    for i in col_values:
         for j in range(i):
-            board[index][toPlace]=1
-            toPlace += 1
-        # gap between two chains
-        toPlace += 1
+            board[row][col] = 1
+            col += 1
+
+        if col < row_size - 1:
+            board[row][col] = -1
+
+        col += 1
+
     return board
 
 
 if __name__ == '__main__':
-    lines=input().rstrip().split()
-    colSize=int(lines[0])
-    rowSize=int(lines[1])
-    row, col=list(), list()
+    lines = input().rstrip().split()
+    row_size = int(lines[0])
+    col_size = int(lines[1])
+    row, col = list(), list()
 
-    for n in range(rowSize):
+    for m in range(row_size):
         row.append(list(map(int, input().rstrip().split())))
 
-    for m in range(colSize):
+    for n in range(col_size):
         col.append(list(map(int, input().rstrip().split())))
 
-    response=solver(row, col)
+    response = solver(row, col)
 
     for n in range(len(response)):
         for m in range(len(response[n])):
